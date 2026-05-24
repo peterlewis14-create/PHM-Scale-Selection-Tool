@@ -1,26 +1,98 @@
 <!DOCTYPE html>
 <html>
+
+<head>
+  <title>PHM Scale Selection Tool (Rev2)</title>
+</head>
+
 <body>
 
-<h2>Hydraulic Scale Tool (Rev2 Spec)</h2>
+<h1>Hydraulic Model Scale Selection Tool (Rev2)</h1>
 
-<button onclick="run()">Run Test</button>
+<!-- ========================= -->
+<h2>Project Context</h2>
+<label>Issues:</label><br>
+<label><input type="checkbox" value="scour_erosion"> Scour / Erosion</label><br>
+<label><input type="checkbox" value="air_entrainment"> Air Entrainment</label><br>
+<label><input type="checkbox" value="energy_dissipation"> Energy Dissipation</label><br>
 
-<pre id="out"></pre>
+<!-- ========================= -->
+<h2>Prototype Data</h2>
+Length: <input id="L" type="number" value="200"><br>
+Width: <input id="W" type="number" value="50"><br>
+Flow (Q): <input id="Q" type="number" value="100"><br>
+Max Height: <input id="Hmax" type="number" value="20"><br>
+Min Elevation: <input id="Emin" type="number" value="0"><br>
+
+<!-- ========================= -->
+<h2>Laboratory Constraints</h2>
+Lab Length: <input id="Lb" type="number" value="10"><br>
+Lab Width: <input id="Wb" type="number" value="5"><br>
+Lab Height: <input id="Hb" type="number" value="2"><br>
+Max Flow: <input id="Qb" type="number" value="2000"><br>
+
+<!-- ========================= -->
+<h2>Run Model</h2>
+<button onclick="run()">Run Scale Selection</button>
+
+<!-- ========================= -->
+<h2>Results</h2>
+<div id="output"></div>
 
 <script type="module">
 import { runEngine } from "./engine/engine.js";
 
 window.run = async () => {
 
+  // Collect context issues
+  const issues = Array.from(document.querySelectorAll("input[type=checkbox]:checked"))
+                      .map(i => i.value);
+
   const result = await runEngine({
-    prototype: { L: 200, W: 50, Q: 100, Hmax: 20, Emin: 0 },
-    lab: { L: 10, W: 5, H: 2, Q: 2000 },
-    context: { issues: ["scour_erosion"] }
+
+    prototype: {
+      L: Number(document.getElementById("L").value),
+      W: Number(document.getElementById("W").value),
+      Q: Number(document.getElementById("Q").value),
+      Hmax: Number(document.getElementById("Hmax").value),
+      Emin: Number(document.getElementById("Emin").value)
+    },
+
+    lab: {
+      L: Number(document.getElementById("Lb").value),
+      W: Number(document.getElementById("Wb").value),
+      H: Number(document.getElementById("Hb").value),
+      Q: Number(document.getElementById("Qb").value)
+    },
+
+    context: {
+      issues: issues
+    }
+
   });
 
-  document.getElementById("out").innerText =
-    JSON.stringify(result, null, 2);
+  // -------- OUTPUT --------
+  document.getElementById("output").innerHTML = `
+
+  <b>Recommended Scale:</b> 1:${result.recommendedScale}<br><br>
+
+  <b>Feasible Range:</b><br>
+  1:${result.feasibleRange.join(", 1:")}<br><br>
+
+  <b>Governing Utilisation:</b>
+  ${(result.governingUtilisation * 100).toFixed(0)}%<br><br>
+
+  <b>Warnings:</b><br>
+  ${result.warnings.length > 0
+      ? result.warnings.map(w => `${w.id} – ${w.message}`).join("<br>")
+      : "None"
+  }
+
+  <br><br>
+
+  <b>Rule Applied:</b> S1 (Rev2 Section 6)
+
+  `;
 };
 </script>
 
