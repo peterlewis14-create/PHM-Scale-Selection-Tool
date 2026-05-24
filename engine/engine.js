@@ -3,7 +3,7 @@ let spec = null;
 // ---------- LOAD SPEC ----------
 async function loadSpec() {
   if (!spec) {
-    const response = await fetch("./spec/spec_rev2.json");
+    const response = await fetch("./spec/spec_v2.json");
     spec = await response.json();
   }
 }
