@@ -1,0 +1,140 @@
+{
+  "meta": {
+    "name": "Hydraulic Model Scale Selection Standard",
+    "version": "2.0",
+    "source": "Hydraulic Model Scale Selection Standard_rev2.docx",
+    "principle": "largest_feasible_scale"
+  },
+
+  "context": {
+    "projectTypes": ["greenfield", "existing"],
+    "issueCategories": [
+      "hydraulic_performance",
+      "scour_erosion",
+      "structural",
+      "high_velocity",
+      "energy_dissipation",
+      "air_entrainment"
+    ]
+  },
+
+  "constraints": {
+    "horizontalFootprint": {
+      "length": "Lm <= Lb",
+      "width": "Wm <= Wb"
+    },
+    "height": {
+      "formula": "Hm = (Hmax - Emin) / N + 0.2",
+      "condition": "Hm <= Hb"
+    },
+    "flow": {
+      "condition": "Qm <= Qb"
+    }
+  },
+
+  "utilisation": {
+    "horizontalFootprint": "max(Lm/Lb, Wm/Wb)",
+    "flow": "Qm/Qb",
+    "height": "Hm/Hb",
+    "rules": [
+      {
+        "id": "U1",
+        "condition": ">1.0",
+        "meaning": "infeasible"
+      },
+      {
+        "id": "U2",
+        "condition": "0.9-1.0",
+        "meaning": "tight but acceptable"
+      },
+      {
+        "id": "U3",
+        "condition": "0.7-1.0",
+        "meaning": "efficient"
+      }
+    ]
+  },
+
+  "selection": {
+    "id": "S1",
+    "rule": "largest_feasible",
+    "statement": "The recommended scale shall be the largest feasible scale. No alternative selection approach shall override this requirement."
+  },
+
+  "dimensionless": {
+    "froude": {
+      "formula": "Fr = V / sqrt(g*L)",
+      "preserved": true
+    },
+    "reynolds": {
+      "formula": "Re = V*L/nu",
+      "scaled": "Re_m = Re_p / N^1.5"
+    },
+    "weber": {
+      "formula": "We = rho*V^2*L/sigma",
+      "scaled": "We_m = We_p / N^2"
+    },
+    "shields": {
+      "formula": "theta = tau / [(rho_s - rho)*g*d]"
+    }
+  },
+
+  "warnings": [
+    {
+      "id": "W1",
+      "condition": { "scale": { ">": 50 } },
+      "appliesTo": ["scour_erosion"],
+      "basis": "Shields parameter distortion",
+      "impact": "Reduced sediment realism",
+      "severity": "high"
+    },
+    {
+      "id": "W2",
+      "condition": { "scale": { ">": 70 } },
+      "appliesTo": ["scour_erosion"],
+      "basis": "Severe Shields distortion",
+      "impact": "Unreliable sediment behaviour",
+      "severity": "high"
+    },
+    {
+      "id": "W3",
+      "condition": { "scale": { ">": 60 } },
+      "appliesTo": ["all"],
+      "basis": "Weber + turbulence scaling",
+      "impact": "Reduced air entrainment",
+      "severity": "medium"
+    },
+    {
+      "id": "W4",
+      "condition": { "scale": { ">": 80 } },
+      "appliesTo": ["all"],
+      "basis": "Combined distortion",
+      "impact": "Reduced hydraulic fidelity",
+      "severity": "high"
+    },
+    {
+      "id": "W5",
+      "condition": { "Re": { "<": "threshold" } },
+      "appliesTo": ["all"],
+      "basis": "Viscous dominance",
+      "impact": "Altered flow behaviour",
+      "severity": "medium"
+    },
+    {
+      "id": "W6",
+      "condition": { "utilisation_max": { ">": 0.9 } },
+      "appliesTo": ["all"],
+      "basis": "Facility constraint",
+      "impact": "Limited operational flexibility",
+      "severity": "info"
+    },
+    {
+      "id": "W7",
+      "condition": { "utilisation_max": { "<": 0.5 } },
+      "appliesTo": ["all"],
+      "basis": "Underutilisation",
+      "impact": "Model unnecessarily small",
+      "severity": "info"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>Hydraulic Scale Tool (Rev2 Spec)</h2>
+
+<button onclick="run()">Run Test</button>
+
+<pre id="out"></pre>
+
+<script type="module">
+import { runEngine } from "../engine/engine.js";
+
+window.run = () => {
+
+  const result = runEngine({
+    prototype: { L: 200, W: 50, Q: 100, Hmax: 20, Emin: 0 },
+    lab: { L: 10, W: 5, H: 2, Q: 2000 },
+    context: { issues: ["scour_erosion"] }
+  });
+
+  document.getElementById("out").innerText =
+    JSON.stringify(result, null, 2);
+};
+</script>
+
+</body>
+</html>
