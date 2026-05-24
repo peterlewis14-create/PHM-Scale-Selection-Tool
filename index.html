@@ -6,16 +6,11 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: Arial;
       margin: 40px;
       background: #f5f7fa;
-    }
-
-    h1 {
-      text-align: center;
     }
 
     .container {
@@ -28,47 +23,21 @@
       padding: 20px;
       margin-bottom: 20px;
       border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-
-    .section h2 {
-      margin-top: 0;
-      border-bottom: 2px solid #ddd;
-      padding-bottom: 5px;
-    }
-
-    input {
-      margin: 5px 0;
-      padding: 5px;
-      width: 120px;
     }
 
     button {
-      padding: 10px 20px;
-      font-size: 16px;
-      background-color: #0078d4;
+      padding: 10px;
+      background: #0078d4;
       color: white;
       border: none;
       border-radius: 5px;
       cursor: pointer;
     }
 
-    button:hover {
-      background-color: #005fa3;
-    }
-
-.result {
-  background: #eef2f7;
-  padding: 15px;
-  border-radius: 5px;
-}
-
-    .label {
-      font-weight: bold;
-    }
-
-    .warning {
-      color: #b71c1c;
+    .result {
+      background: #eef2f7;
+      padding: 10px;
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -77,65 +46,43 @@
 
 <div class="container">
 
-<h1>Hydraulic Model Scale Selection Tool (Rev2)</h1>
+<h1>Hydraulic Scale Selection Tool</h1>
 
-<!-- ========================= -->
 <div class="section">
-<h2>Project Context</h2>
-
-<label><input type="checkbox" value="scour_erosion"> Scour / Erosion</label><br>
-<label><input type="checkbox" value="air_entrainment"> Air Entrainment</label><br>
-<label><input type="checkbox" value="energy_dissipation"> Energy Dissipation</label>
-
+<h2>Prototype</h2>
+L <input id="L" type="number" value="200"><br>
+W <input id="W" type="number" value="50"><br>
+Q <input id="Q" type="number" value="100"><br>
+Hmax <input id="Hmax" type="number" value="20"><br>
+Emin <input id="Emin" type="number" value="0"><br>
 </div>
 
-<!-- ========================= -->
 <div class="section">
-<h2>Prototype Data</h2>
-
-Length (m): <br><input id="L" type="number" value="200"><br>
-Width (m): <br><input id="W" type="number" value="50"><br>
-Flow Q (m³/s): <br><input id="Q" type="number" value="100"><br>
-Max Height (m): <br><input id="Hmax" type="number" value="20"><br>
-Min Elevation (m): <br><input id="Emin" type="number" value="0">
-
+<h2>Lab</h2>
+L <input id="Lb" type="number" value="10"><br>
+W <input id="Wb" type="number" value="5"><br>
+H <input id="Hb" type="number" value="2"><br>
+Q <input id="Qb" type="number" value="2000"><br>
 </div>
 
-<!-- ========================= -->
-<div class="section">
-<h2>Laboratory Constraints</h2>
-
-Lab Length (m): <br><input id="Lb" type="number" value="10"><br>
-Lab Width (m): <br><input id="Wb" type="number" value="5"><br>
-Lab Height (m): <br><input id="Hb" type="number" value="2"><br>
-Max Flow (L/s): <br><input id="Qb" type="number" value="2000">
-
-</div>
-
-<!-- ========================= -->
-<div style="text-align:center; margin-bottom:20px;">
+<div style="text-align:center;">
 <button onclick="run()">Run Scale Selection</button>
 </div>
 
-<!-- ========================= -->
 <div class="section">
+
 <h2>Results</h2>
+
+<div id="output" class="result"></div>
 
 <h3>Scale vs Utilisation</h3>
 
-<canvas id="scaleChart" height="300"></canvas>
+<canvas id="scaleChart"></canvas><br>
 
-<br>
-
-<label><b>Scale selector:</b></label><br>
-<input type="range" id="scaleSlider" min="5" max="100" step="5">
+<input type="range" id="scaleSlider" min="5" max="100" step="5"><br>
 
 <div id="sliderValue"></div>
 <div id="intersections"></div>
-  
-<div id="output" class="result">
-Run the model to see results.
-</div>
 
 </div>
 
@@ -146,199 +93,86 @@ import { runEngine } from "./engine/engine.js";
 
 window.run = async () => {
 
-  const issues = Array.from(document.querySelectorAll("input[type=checkbox]:checked"))
-                      .map(i => i.value);
-
   const result = await runEngine({
-
     prototype: {
-      L: Number(document.getElementById("L").value),
-      W: Number(document.getElementById("W").value),
-      Q: Number(document.getElementById("Q").value),
-      Hmax: Number(document.getElementById("Hmax").value),
-      Emin: Number(document.getElementById("Emin").value)
+      L: Number(L.value),
+      W: Number(W.value),
+      Q: Number(Q.value),
+      Hmax: Number(Hmax.value),
+      Emin: Number(Emin.value)
     },
-
     lab: {
-      L: Number(document.getElementById("Lb").value),
-      W: Number(document.getElementById("Wb").value),
-      H: Number(document.getElementById("Hb").value),
-      Q: Number(document.getElementById("Qb").value)
+      L: Number(Lb.value),
+      W: Number(Wb.value),
+      H: Number(Hb.value),
+      Q: Number(Qb.value)
     },
-
-    context: {
-      issues: issues
-    }
-
+    context: { issues: [] }
   });
 
-  document.getElementById("output").innerHTML = `
-
-// ===== STEP 4: BUILD GRAPH =====
-
-const data = result.allScales;
-
-// X labels
-const labels = data.map(d => "1:" + d.scale);
-
-// data series
-const footprint = data.map(d => d.feasible ? d.utilFoot * 100 : null);
-const flow = data.map(d => d.feasible ? d.utilFlow * 100 : null);
-const height = data.map(d => d.feasible ? d.utilHeight * 100 : null);
-
-// infeasible (grey)
-const infeasible = data.map(d => !d.feasible ? d.utilMax * 100 : null);
-
-// destroy previous chart
-if (window.scaleChart) window.scaleChart.destroy();
-
-const ctx = document.getElementById("scaleChart").getContext("2d");
-
-window.scaleChart = new Chart(ctx, {
-  type: "line",
-  data: {
-    labels: labels,
-    datasets: [
-      {
-        label: "Footprint",
-        data: footprint,
-        borderColor: "blue",
-        tension: 0.3
-      },
-      {
-        label: "Flow",
-        data: flow,
-        borderColor: "green",
-        tension: 0.3
-      },
-      {
-        label: "Height",
-        data: height,
-        borderColor: "orange",
-        tension: 0.3
-      },
-      {
-        label: "Infeasible",
-        data: infeasible,
-        borderColor: "grey",
-        borderDash: [5,5]
-      }
-    ]
-  },
-
-options: {
-  plugins: [{
-    id: 'verticalLine',
-    afterDraw: (chart) => {
-
-      if (!window.selectedScale) return;
-
-      const index = data.findIndex(d => d.scale === window.selectedScale);
-      const x = chart.scales.x.getPixelForValue(index);
-
-      const ctx = chart.ctx;
-
-      ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(x, chart.chartArea.top);
-      ctx.lineTo(x, chart.chartArea.bottom);
-      ctx.strokeStyle = 'red';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      ctx.restore();
-    }
-  }],
-
-  scales: {
-window.scaleChart = new Chart(ctx, {
-  type: "line",
-  data: {
-    labels: labels,
-    datasets: [ ... ]
-  },
-  options: {
-    plugins: [{
-      id: 'verticalLine',
-      afterDraw: (chart) => {
-        if (!window.selectedScale) return;
-
-        const index = data.findIndex(d => d.scale === window.selectedScale);
-        const x = chart.scales.x.getPixelForValue(index);
-
-        const ctx = chart.ctx;
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(x, chart.chartArea.top);
-        ctx.lineTo(x, chart.chartArea.bottom);
-        ctx.strokeStyle = 'red';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        ctx.restore();
-      }
-    }],
-    scales: {
-      x: { title: { display: true, text: "Scale (1:N)" } },
-      y: { title: { display: true, text: "Utilisation (%)" } }
-    }
-  }
-});
-``
-});
-``
-// ===== STEP 5: SLIDER =====
-
-const slider = document.getElementById("scaleSlider");
-const sliderValue = document.getElementById("sliderValue");
-const intersections = document.getElementById("intersections");
-
-// set initial position
-slider.value = result.recommendedScale;
-
-slider.oninput = () => {
-
-  const selected = Number(slider.value);
-
-  sliderValue.innerHTML = `<b>Scale:</b> 1:${selected}`;
-
-  const point = data.find(d => d.scale === selected);
-
-  intersections.innerHTML = `
-    <b>Footprint:</b> ${(point.utilFoot * 100).toFixed(1)}%<br>
-    <b>Flow:</b> ${(point.utilFlow * 100).toFixed(1)}%<br>
-    <b>Height:</b> ${(point.utilHeight * 100).toFixed(1)}%<br>
-    <b>Feasible:</b> ${point.feasible ? "Yes" : "No"}
+  // ✅ TEXT OUTPUT
+  output.innerHTML = `
+  <b>Recommended:</b> 1:${result.recommendedScale}<br>
+  <b>Feasible:</b> ${result.feasibleRange.join(", ")}<br>
+  <b>Utilisation:</b> ${(result.governingUtilisation * 100).toFixed(0)}%
   `;
 
-  window.selectedScale = selected;
+  // ✅ GRAPH
+  const data = result.allScales;
 
-  window.scaleChart.update();
+  const labels = data.map(d => "1:" + d.scale);
 
-};
+  const footprint = data.map(d => d.feasible ? d.utilFoot * 100 : null);
+  const flow = data.map(d => d.feasible ? d.utilFlow * 100 : null);
+  const height = data.map(d => d.feasible ? d.utilHeight * 100 : null);
 
-// trigger initial update
-slider.dispatchEvent(new Event("input"));
+  if (window.chart) window.chart.destroy();
 
-};
+  const ctx = document.getElementById("scaleChart");
 
-// trigger initial update
-slider.dispatchEvent(new Event("input"));
-  <div><span class="label">Recommended Scale:</span> 1:${result.recommendedScale}</div><br>
+  window.chart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [
+        { label: "Footprint", data: footprint, borderColor: "blue" },
+        { label: "Flow", data: flow, borderColor: "green" },
+        { label: "Height", data: height, borderColor: "orange" }
+      ]
+    },
+    options: {
+      plugins: {
+        legend: { position: "top" }
+      },
+      scales: {
+        x: { title: { display: true, text: "Scale" } },
+        y: { title: { display: true, text: "% Utilisation" } }
+      }
+    }
+  });
 
-  <div><span class="label">Feasible Range:</span><br>
-  1:${result.feasibleRange.join(", 1:")}</div><br>
+  // ✅ SLIDER
+  const slider = document.getElementById("scaleSlider");
 
-  <div><span class="label">Governing Utilisation:</span>
-  ${(result.governingUtilisation * 100).toFixed(0)}%</div><br>
+  slider.value = result.recommendedScale;
 
-  <div><span class="label">Warnings:</span><br>
-  ${result.warnings.length > 0
-      ? result.warnings.map(w => `<div class="warning">${w.id} – ${w.message}</div>`).join("")
-      : "None"
-  }</div><br>
+  slider.oninput = () => {
+    const s = Number(slider.value);
 
-  <div><span class="label">Rule Applied:</span> S1 (Rev2 Section 6)</div>
+    sliderValue.innerHTML = "Scale: 1:" + s;
 
-  `;
+    const p = data.find(d => d.scale === s);
+
+    intersections.innerHTML = `
+      Footprint: ${(p.utilFoot * 100).toFixed(1)}%<br>
+      Flow: ${(p.utilFlow * 100).toFixed(1)}%<br>
+      Height: ${(p.utilHeight * 100).toFixed(1)}%<br>
+      Feasible: ${p.feasible}
+    `;
+  };
+
+  slider.dispatchEvent(new Event("input"));
+
 };
 </script>
 
