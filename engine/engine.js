@@ -10,7 +10,6 @@ async function loadSpec() {
 
 // ---------- CHECK CONDITIONS ----------
 function checkCondition(rule, context) {
-
   if (rule.scale && rule.scale[">"]) {
     return context.scale > rule.scale[">"];
   }
@@ -52,3 +51,67 @@ export async function runEngine(inputs) {
     let Qm = (prototype.Q / Math.pow(N, 2.5)) * 1000;
     let Hm = ((prototype.Hmax - prototype.Emin) / N) + 0.2;
 
+    let feasible = isFeasible({ Lm, Wm, Qm, Hm }, lab);
+
+    let utilFoot = Math.max(Lm / lab.L, Wm / lab.W);
+    let utilFlow = Qm / lab.Q;
+    let utilHeight = Hm / lab.H;
+
+    let utilMax = Math.max(utilFoot, utilFlow, utilHeight);
+
+    results.push({
+      scale: N,
+      feasible,
+      utilMax
+    });
+  }
+
+  let feasible = results.filter(r => r.feasible);
+
+  if (feasible.length === 0) {
+    return {
+      error: "No feasible scale",
+      rule: "S1"
+    };
+  }
+
+  // ✅ Rule S1 (largest feasible)
+  let recommended = feasible.reduce((a, b) =>
+    a.scale < b.scale ? a : b
+  );
+
+  // ---------- WARNINGS ----------
+  let warnings = [];
+
+  spec.warnings.forEach(w => {
+
+    let applies =
+      !w.appliesTo ||
+      w.appliesTo.includes("all") ||
+      (context.issues && w.appliesTo.some(x => context.issues.includes(x)));
+
+    if (!applies) return;
+
+    if (checkCondition(w.condition, {
+      scale: recommended.scale,
+      utilMax: recommended.utilMax
+    })) {
+      warnings.push({
+        id: w.id,
+        message: w.impact,
+        source: "Section 7"
+      });
+    }
+
+  });
+
+  return {
+    rule: "S1",
+    standardVersion: "2.0",
+    recommendedScale: recommended.scale,
+    feasibleRange: feasible.map(f => f.scale),
+    governingUtilisation: recommended.utilMax,
+    warnings
+  };
+
+}
