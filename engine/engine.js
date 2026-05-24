@@ -108,13 +108,15 @@ results.push({
 
   });
 
-  return {
-    rule: "S1",
-    standardVersion: "2.0",
-    recommendedScale: recommended.scale,
-    feasibleRange: feasible.map(f => f.scale),
-    governingUtilisation: recommended.utilMax,
-    warnings
-  };
+return {
+  rule: "S1",
+  standardVersion: "2.0",
+  recommendedScale: recommended.scale,
+  feasibleRange: feasible.map(f => f.scale),
+  governingUtilisation: recommended.utilMax,
+  warnings,
+
+  allScales: results  
+};
 
 }
