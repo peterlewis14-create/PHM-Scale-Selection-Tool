@@ -2,49 +2,135 @@
 <html>
 
 <head>
-  <title>PHM Scale Selection Tool (Rev2)</title>
+  <title>Hydraulic Model Scale Selection Tool (Rev2)</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background: #f5f7fa;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+
+    .section {
+      background: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .section h2 {
+      margin-top: 0;
+      border-bottom: 2px solid #ddd;
+      padding-bottom: 5px;
+    }
+
+    input {
+      margin: 5px 0;
+      padding: 5px;
+      width: 120px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #0078d4;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #005fa3;
+    }
+
+    .result {
+      background: #eef2f7;
+      padding: 15px;
+      border-radius: 5px;
+    }
+
+    .label {
+      font-weight: bold;
+    }
+
+    .warning {
+      color: #b71c1c;
+    }
+  </style>
 </head>
 
 <body>
 
+<div class="container">
+
 <h1>Hydraulic Model Scale Selection Tool (Rev2)</h1>
 
 <!-- ========================= -->
+<div class="section">
 <h2>Project Context</h2>
-<label>Issues:</label><br>
+
 <label><input type="checkbox" value="scour_erosion"> Scour / Erosion</label><br>
 <label><input type="checkbox" value="air_entrainment"> Air Entrainment</label><br>
-<label><input type="checkbox" value="energy_dissipation"> Energy Dissipation</label><br>
+<label><input type="checkbox" value="energy_dissipation"> Energy Dissipation</label>
+
+</div>
 
 <!-- ========================= -->
+<div class="section">
 <h2>Prototype Data</h2>
-Length: <input id="L" type="number" value="200"><br>
-Width: <input id="W" type="number" value="50"><br>
-Flow (Q): <input id="Q" type="number" value="100"><br>
-Max Height: <input id="Hmax" type="number" value="20"><br>
-Min Elevation: <input id="Emin" type="number" value="0"><br>
+
+Length (m): <br><input id="L" type="number" value="200"><br>
+Width (m): <br><input id="W" type="number" value="50"><br>
+Flow Q (m³/s): <br><input id="Q" type="number" value="100"><br>
+Max Height (m): <br><input id="Hmax" type="number" value="20"><br>
+Min Elevation (m): <br><input id="Emin" type="number" value="0">
+
+</div>
 
 <!-- ========================= -->
+<div class="section">
 <h2>Laboratory Constraints</h2>
-Lab Length: <input id="Lb" type="number" value="10"><br>
-Lab Width: <input id="Wb" type="number" value="5"><br>
-Lab Height: <input id="Hb" type="number" value="2"><br>
-Max Flow: <input id="Qb" type="number" value="2000"><br>
+
+Lab Length (m): <br><input id="Lb" type="number" value="10"><br>
+Lab Width (m): <br><input id="Wb" type="number" value="5"><br>
+Lab Height (m): <br><input id="Hb" type="number" value="2"><br>
+Max Flow (L/s): <br><input id="Qb" type="number" value="2000">
+
+</div>
 
 <!-- ========================= -->
-<h2>Run Model</h2>
+<div style="text-align:center; margin-bottom:20px;">
 <button onclick="run()">Run Scale Selection</button>
+</div>
 
 <!-- ========================= -->
+<div class="section">
 <h2>Results</h2>
-<div id="output"></div>
+
+<div id="output" class="result">
+Run the model to see results.
+</div>
+
+</div>
+
+</div>
 
 <script type="module">
 import { runEngine } from "./engine/engine.js";
 
 window.run = async () => {
 
-  // Collect context issues
   const issues = Array.from(document.querySelectorAll("input[type=checkbox]:checked"))
                       .map(i => i.value);
 
@@ -71,26 +157,23 @@ window.run = async () => {
 
   });
 
-  // -------- OUTPUT --------
   document.getElementById("output").innerHTML = `
 
-  <b>Recommended Scale:</b> 1:${result.recommendedScale}<br><br>
+  <div><span class="label">Recommended Scale:</span> 1:${result.recommendedScale}</div><br>
 
-  <b>Feasible Range:</b><br>
-  1:${result.feasibleRange.join(", 1:")}<br><br>
+  <div><span class="label">Feasible Range:</span><br>
+  1:${result.feasibleRange.join(", 1:")}</div><br>
 
-  <b>Governing Utilisation:</b>
-  ${(result.governingUtilisation * 100).toFixed(0)}%<br><br>
+  <div><span class="label">Governing Utilisation:</span>
+  ${(result.governingUtilisation * 100).toFixed(0)}%</div><br>
 
-  <b>Warnings:</b><br>
+  <div><span class="label">Warnings:</span><br>
   ${result.warnings.length > 0
-      ? result.warnings.map(w => `${w.id} – ${w.message}`).join("<br>")
+      ? result.warnings.map(w => `<div class="warning">${w.id} – ${w.message}</div>`).join("")
       : "None"
-  }
+  }</div><br>
 
-  <br><br>
-
-  <b>Rule Applied:</b> S1 (Rev2 Section 6)
+  <div><span class="label">Rule Applied:</span> S1 (Rev2 Section 6)</div>
 
   `;
 };
