@@ -311,6 +311,12 @@ slider.oninput = () => {
   window.selectedScale = selected;
 
   window.scaleChart.update();
+
+};
+
+// trigger initial update
+slider.dispatchEvent(new Event("input"));
+
 };
 
 // trigger initial update
