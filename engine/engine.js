@@ -91,11 +91,12 @@ return {
       scale: recommended.scale,
       utilMax: recommended.utilMax
     })) {
-      warnings.push({
-        id: w.id,
-        message: w.impact,
-        severity: w.severity
-      });
+    warnings.push({
+  id: w.id,
+  message: w.impact,
+  source: "Section 7"
+});
+
     }
   });
 
