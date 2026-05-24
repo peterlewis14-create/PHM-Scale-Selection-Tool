@@ -64,11 +64,13 @@ export function runEngine(inputs) {
   let feasible = results.filter(r => r.feasible);
 
   if (feasible.length === 0) {
-    return {
-      error: "No feasible scale",
-      rule: "S1"
-    };
-  }
+return {
+  rule: "S1",
+  source: "Rev2 Section 6",
+  standardVersion: "2.0",
+  recommendedScale: ...
+}
+``
 
   // ✅ KEY RULE S1 (REV2)
   let recommended = feasible.reduce((a, b) => (a.scale < b.scale ? a : b));
