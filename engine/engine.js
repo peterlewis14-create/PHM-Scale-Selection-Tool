@@ -3,7 +3,7 @@ let spec = null;
 // ---------- LOAD SPEC ----------
 async function loadSpec() {
   if (!spec) {
-    const response = await fetch("./spec/spec_v2.json");
+    const response = await fetch("spec/spec_v2.json");
     spec = await response.json();
   }
 }
@@ -52,6 +52,3 @@ export async function runEngine(inputs) {
     let Qm = (prototype.Q / Math.pow(N, 2.5)) * 1000;
     let Hm = ((prototype.Hmax - prototype.Emin) / N) + 0.2;
 
-    let feasible = isFeasible({ Lm, Wm, Qm, Hm }, lab);
-
-    let utilFoot = Math.max(Lm / lab.L, Wm / lab.W);
