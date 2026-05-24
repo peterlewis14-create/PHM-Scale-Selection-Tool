@@ -57,25 +57,11 @@
       background-color: #005fa3;
     }
 
-    .result {
-      background: #eef2f7;
-      padding: 15px;
-      border-radius: 5px;
-      
-<h3>Scale vs Utilisation</h3>
-
-<canvas id="scaleChart" height="300"></canvas>
-
-<br>
-
-<label><b>Scale selector:</b></label><br>
-<input type="range" id="scaleSlider" min="5" max="100" step="5">
-
-<div id="sliderValue"></div>
-
-<div id="intersections"></div>
-
-    }
+.result {
+  background: #eef2f7;
+  padding: 15px;
+  border-radius: 5px;
+}
 
     .label {
       font-weight: bold;
@@ -146,7 +132,6 @@ Max Flow (L/s): <br><input id="Qb" type="number" value="2000">
 
 <div id="sliderValue"></div>
 <div id="intersections"></div>
-``
   
 <div id="output" class="result">
 Run the model to see results.
@@ -313,9 +298,6 @@ slider.oninput = () => {
   window.scaleChart.update();
 
 };
-
-// trigger initial update
-slider.dispatchEvent(new Event("input"));
 
 // trigger initial update
 slider.dispatchEvent(new Event("input"));
