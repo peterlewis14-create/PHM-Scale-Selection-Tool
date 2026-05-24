@@ -250,23 +250,39 @@ options: {
   }],
 
   scales: {
-    x: {
-      title: { display: true, text: "Scale (1:N)" }
-    },
-    y: {
-      title: { display: true, text: "Utilisation (%)" }
-    }
-  }
-}
+window.scaleChart = new Chart(ctx, {
+  type: "line",
+  data: {
+    labels: labels,
+    datasets: [ ... ]
+  },
+  options: {
+    plugins: [{
+      id: 'verticalLine',
+      afterDraw: (chart) => {
+        if (!window.selectedScale) return;
 
-      x: {
-        title: { display: true, text: "Scale (1:N)" }
-      },
-      y: {
-        title: { display: true, text: "Utilisation (%)" }
+        const index = data.findIndex(d => d.scale === window.selectedScale);
+        const x = chart.scales.x.getPixelForValue(index);
+
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(x, chart.chartArea.top);
+        ctx.lineTo(x, chart.chartArea.bottom);
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.restore();
       }
+    }],
+    scales: {
+      x: { title: { display: true, text: "Scale (1:N)" } },
+      y: { title: { display: true, text: "Utilisation (%)" } }
     }
   }
+});
+``
 });
 ``
 // ===== STEP 5: SLIDER =====
