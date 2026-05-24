@@ -1,4 +1,12 @@
-import spec from "../spec/spec_rev2.json";
+let spec = null;
+
+// ---------- LOAD SPEC ----------
+async function loadSpec() {
+  if (!spec) {
+    const response = await fetch("./spec/spec_rev2.json");
+    spec = await response.json();
+  }
+}
 
 // ---------- CHECK CONDITIONS ----------
 function checkCondition(rule, context) {
@@ -26,86 +34,3 @@ function isFeasible(s, lab) {
     s.Hm <= lab.H &&
     s.Qm <= lab.Q
   );
-}
-
-// ---------- MAIN ENGINE ----------
-export function runEngine(inputs) {
-
-  const { prototype, lab, context } = inputs;
-
-  let results = [];
-
-  for (let N = 5; N <= 100; N += 5) {
-
-    let Lm = prototype.L / N;
-    let Wm = prototype.W / N;
-    let Qm = (prototype.Q / Math.pow(N, 2.5)) * 1000;
-    let Hm = ((prototype.Hmax - prototype.Emin) / N) + 0.2;
-
-    let feasible = isFeasible({ Lm, Wm, Qm, Hm }, lab);
-
-    let utilFoot = Math.max(Lm / lab.L, Wm / lab.W);
-    let utilFlow = Qm / lab.Q;
-    let utilHeight = Hm / lab.H;
-
-    let utilMax = Math.max(utilFoot, utilFlow, utilHeight);
-
-    results.push({
-      scale: N,
-      feasible,
-      Lm, Wm, Qm, Hm,
-      utilFoot,
-      utilFlow,
-      utilHeight,
-      utilMax
-    });
-  }
-
-  let feasible = results.filter(r => r.feasible);
-
-  if (feasible.length === 0) {
-return {
-  rule: "S1",
-  source: "Rev2 Section 6",
-  standardVersion: "2.0",
-  recommendedScale: ...
-}
-``
-
-  // ✅ KEY RULE S1 (REV2)
-  let recommended = feasible.reduce((a, b) => (a.scale < b.scale ? a : b));
-
-  // ---------- WARNINGS ----------
-  let warnings = [];
-
-  spec.warnings.forEach(w => {
-
-    let applies =
-      !w.appliesTo ||
-      w.appliesTo.includes("all") ||
-      (context.issues && w.appliesTo.some(x => context.issues.includes(x)));
-
-    if (!applies) return;
-
-    if (checkCondition(w.condition, {
-      scale: recommended.scale,
-      utilMax: recommended.utilMax
-    })) {
-    warnings.push({
-  id: w.id,
-  message: w.impact,
-  source: "Section 7"
-});
-
-    }
-  });
-
-  return {
-    rule: spec.selection.id,
-    standardVersion: spec.meta.version,
-    recommendedScale: recommended.scale,
-    feasibleRange: feasible.map(f => f.scale),
-    governingUtilisation: recommended.utilMax,
-    warnings
-  };
-}
