@@ -29,3 +29,13 @@ All updates shall:
 1. Update the Word document
 2. Update JSON spec
 3. Commit to repository
+
+## Traceability
+
+All outputs from this tool can be traced to:
+
+- standard_rev2.docx (authoritative source)
+- spec_rev2.json (machine rules)
+- engine.js (execution)
+
+Each rule (S1, W1–W7) corresponds directly to sections of the standard.
