@@ -59,11 +59,14 @@ export async function runEngine(inputs) {
 
     let utilMax = Math.max(utilFoot, utilFlow, utilHeight);
 
-    results.push({
-      scale: N,
-      feasible,
-      utilMax
-    });
+results.push({
+  scale: N,
+  feasible,
+  utilFoot,
+  utilFlow,
+  utilHeight,
+  utilMax
+});
   }
 
   let feasible = results.filter(r => r.feasible);
